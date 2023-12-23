@@ -132,12 +132,10 @@ func DeleteStudent(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	deleteonestudent(params["id"])
 	json.NewEncoder(w).Encode(params["id"])
-
 }
 func DeleteAllStudents(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Allow-Control-Allow-Methods", "DELETE")
 	deletcount := deletall()
 	json.NewEncoder(w).Encode(deletcount)
-
 }
