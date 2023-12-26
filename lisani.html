@@ -13,40 +13,123 @@
         <input type="text" id="address" name="address"><br>
         <label for="age">Age:</label>
         <input type="number" id="age" name="age"><br>
-        <input type="submit" value="Submit">
+        <input type="submit" value="Submit"> <!--onclick="submit()"--> 
     </form>
-    
+    <div id="sendresp" ><button type="Getb" id="Getb">GET</button></div>
 
     <h2>Students List</h2>
-    <ul id="studentsList"></ul>
+    <table>
+        <thead>
+            <tr >
+                <th>Name</th>
+                <th>Address</th>
+                <th>Age</th>
+            </tr>
+        </thead>
+        <tbody id="studentsList">
+            <!-- Table rows will be added here dynamically -->
+        </tbody>
+    </table>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script>
-    $(document).ready(function(){
-        $("#studentForm").on('submit', function(e){
-            e.preventDefault();
-            var name = $("#name").val();
-            var address = $("#address").val();
-            var age = parseInt($("#age").val(), 10);
-            $.ajax({
-                type: "POST",
-                url: "http://localhost:8080/lisaani/students/add",
-                contentType: "application/json",
-                data: JSON.stringify({
-                    Name: name,
-                    Address: address,
-                    Age: age
-                }),
-                success: function(response){
-                    // Handle success
-                },
-                error: function(xhr, status, error){
-                    // Handle error
-                }
-            });
-        });
+        document.getElementById("studentForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        submit();
     });
-</script>
+    document.addEventListener("DOMContentLoaded", function (e) {
+    e.preventDefault();
+    getALLCol();
+});
+        var reciv = document.getElementById("sendresp");
+    function submit() {
 
+        console.log("jsonObject");
+        const myRequest = new XMLHttpRequest();
+        
+        myRequest.onreadystatechange = function () {
+        console.log("Ready state:", this.readyState, "Status:", this.status);
+            if (this.readyState === 4 && this.status === 200) {
+                reciv.innerHTML = '<p style="color: green;">Add successfully</p>';
+
+            }
+        };
+        //Creat Obkject to send 
+        var name = $("#name").val();
+        var address = $("#address").val();
+        var age = parseInt($("#age").val(), 10);
+
+        // Create a JSON object
+        var jsonObject = {
+            name: name,
+            address: address,
+            age: age
+        };
+        console.log(jsonObject);
+            myRequest.open("POST", "http://localhost:8080/lisaani/students/add", true);
+        
+        // Set the content type to JSON
+            myRequest.setRequestHeader("Content-Type", "application/json");
+
+        // Convert the JavaScript object to a JSON string
+            var jsonData = JSON.stringify(jsonObject);
+
+        // Send the JSON string as the request payload
+            myRequest.send(jsonData);
+    };
+   
+    function getALLCol(){
+        const Freq=new XMLHttpRequest();
+        var tableBody  = document.getElementById("studentsList");
+        var rows="";
+        Freq.onreadystatechange =function(){
+            if(Freq.status==200 && Freq.readyState==4){
+                console.log("Data successfully returned.")
+                //creat JS Object
+                    var jsObject =JSON.parse(Freq.responseText)
+                    var name = "";
+                    var age = 0; // Assuming age is a number
+                    var address = "";
+                // Clear existing rows
+                    tableBody.innerHTML = "";
+                //Loop to add Rows to tablebody
+                    for (var i=0; i<jsObject.length;i++){
+                            name =jsObject[i].name;
+                            address=jsObject[i].address;
+                            age=jsObject[i].age;
+                        // Append a new row to the table body
+                        // creat new row to table body 
+                            var newRow = tableBody.insertRow(tableBody.rows.length);
+                        //creat td int new row 
+                            var cell1 = newRow.insertCell(0);
+                            var cell2 = newRow.insertCell(1);
+                            var cell3 = newRow.insertCell(2);
+                        //set data to row cells
+                            cell1.innerHTML = name;
+                            cell2.innerHTML = address;
+                            cell3.innerHTML = age;
+                    }
+                    
+            };
+        };
+        Freq.open("GET", "http://localhost:8080/lisaani/students",true);
+        Freq.send();
+    };
+    function UpdateAGE(){
+        const Freq=new XMLHttpRequest();
+        Freq.onreadystatechange =function(){
+            if(Freq.status==200 && Freq.readyState==4){
+                
+            };
+        };
+        Freq.open("PUT", "/lisaani/students/edit/{id}",true);
+        Freq.send();
+    };
+</script>
+<style>
+    table th, table td {
+    border: 1px solid rgb(0, 82, 204);
+}
+</style>
 </body>
 </html>

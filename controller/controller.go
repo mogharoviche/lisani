@@ -15,14 +15,16 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+// Congig
 const connectionstring = "mongodb://localhost:27017"
 const dbName = "Mydblisane"
-const colname = "students"
+
+//const colname = "students"
 
 var collection *mongo.Collection
 
 // connect with mongoDB
-func init() {
+func CXDB(colname string) {
 	//client options
 	clientoption := options.Client().ApplyURI(connectionstring)
 	//connect to mongo db
@@ -30,15 +32,16 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("Mongodb connection seccess")
+	fmt.Println("Mongodb connection success")
 	collection = client.Database(dbName).Collection(colname)
 }
 
 // MongoDb -fils
 // Creat Helpers ************************************************
 // insert 1 record :
-func insertonestudent(student models.Student) {
-	inserted, err := collection.InsertOne(context.Background(), student)
+func insertonestudent(modelname models.Student, colnam string) {
+	CXDB(colnam)
+	inserted, err := collection.InsertOne(context.Background(), modelname)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -46,7 +49,8 @@ func insertonestudent(student models.Student) {
 }
 
 // update one record
-func updateonestudent(studentId string, newstudent map[string]string) {
+func updateonestudent(studentId string, newstudent map[string]string, colnam string) {
+	CXDB(colnam)
 	id, _ := primitive.ObjectIDFromHex(studentId)
 	filter := bson.M{"_id": id}
 	update := bson.M{"$set": newstudent}
@@ -58,7 +62,8 @@ func updateonestudent(studentId string, newstudent map[string]string) {
 }
 
 // delet 1 record
-func deleteonestudent(studentId string) {
+func deleteonestudent(studentId string, colnam string) {
+	CXDB(colnam)
 	id, _ := primitive.ObjectIDFromHex(studentId)
 	filter := bson.M{"_id": id}
 	deletecount, err := collection.DeleteOne(context.Background(), filter)
@@ -69,7 +74,8 @@ func deleteonestudent(studentId string) {
 }
 
 // delete all record from db
-func deletall() int64 {
+func deletall(colnam string) int64 {
+	CXDB(colnam)
 	filter := bson.D{{}}
 	deletecount, err := collection.DeleteMany(context.Background(), filter, nil)
 	if err != nil {
@@ -80,7 +86,8 @@ func deletall() int64 {
 }
 
 // get all student
-func getAll() []primitive.M {
+func getAll(colnam string) []primitive.M {
+	CXDB(colnam)
 	cursor, err := collection.Find(context.Background(), bson.D{{}})
 	if err != nil {
 		log.Fatal(err)
@@ -101,7 +108,7 @@ func getAll() []primitive.M {
 // creat the actual Controller files
 func GetAllstudents(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	allstudent := getAll()
+	allstudent := getAll("students")
 	json.NewEncoder(w).Encode(allstudent)
 }
 func Creatstudent(w http.ResponseWriter, r *http.Request) {
@@ -110,7 +117,7 @@ func Creatstudent(w http.ResponseWriter, r *http.Request) {
 
 	var student models.Student
 	_ = json.NewDecoder(r.Body).Decode(&student)
-	insertonestudent(student)
+	insertonestudent(student, "students")
 	json.NewEncoder(w).Encode(student)
 }
 func Markedaspresent(w http.ResponseWriter, r *http.Request) {
@@ -123,19 +130,19 @@ func Markedaspresent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	params := mux.Vars(r)
-	updateonestudent(params["id"], updatedStudent)
+	updateonestudent(params["id"], updatedStudent, "students")
 	json.NewEncoder(w).Encode(params["id"])
 }
 func DeleteStudent(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Allow-Control-Allow-Methods", "DELETE")
 	params := mux.Vars(r)
-	deleteonestudent(params["id"])
+	deleteonestudent(params["id"], "students")
 	json.NewEncoder(w).Encode(params["id"])
 }
 func DeleteAllStudents(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Allow-Control-Allow-Methods", "DELETE")
-	deletcount := deletall()
+	deletcount := deletall("students")
 	json.NewEncoder(w).Encode(deletcount)
 }
