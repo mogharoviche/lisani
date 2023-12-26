@@ -49,7 +49,7 @@ func insertonestudent(modelname models.Student, colnam string) {
 }
 
 // update one record
-func updateonestudent(studentId string, newstudent map[string]string, colnam string) {
+func updateonestudent(studentId string, newstudent models.Student, colnam string) {
 	CXDB(colnam)
 	id, _ := primitive.ObjectIDFromHex(studentId)
 	filter := bson.M{"_id": id}
@@ -123,7 +123,7 @@ func Creatstudent(w http.ResponseWriter, r *http.Request) {
 func Markedaspresent(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Allow-Control-Allow-Methods", "Put")
-	var updatedStudent map[string]string
+	var updatedStudent models.Student
 	err := json.NewDecoder(r.Body).Decode(&updatedStudent)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -133,6 +133,7 @@ func Markedaspresent(w http.ResponseWriter, r *http.Request) {
 	updateonestudent(params["id"], updatedStudent, "students")
 	json.NewEncoder(w).Encode(params["id"])
 }
+
 func DeleteStudent(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Allow-Control-Allow-Methods", "DELETE")
@@ -140,6 +141,7 @@ func DeleteStudent(w http.ResponseWriter, r *http.Request) {
 	deleteonestudent(params["id"], "students")
 	json.NewEncoder(w).Encode(params["id"])
 }
+
 func DeleteAllStudents(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Allow-Control-Allow-Methods", "DELETE")

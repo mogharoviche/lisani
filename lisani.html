@@ -5,6 +5,11 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
+    <table>
+        <th>
+            <td id="selectedid"></td>
+        </th>
+    </table>
     <h2>Add/Edit Student</h2>
     <form id="studentForm">
         <label for="name">Name:</label>
@@ -13,9 +18,10 @@
         <input type="text" id="address" name="address"><br>
         <label for="age">Age:</label>
         <input type="number" id="age" name="age"><br>
-        <input type="submit" value="Submit"> <!--onclick="submit()"--> 
+        <input type="submit" value="Submit"><br>
+        <input type="button" value="Update" onclick="UpdateCollection()">
     </form>
-    <div id="sendresp" ><button type="Getb" id="Getb">GET</button></div>
+    <div id="sendresp" ></div>
 
     <h2>Students List</h2>
     <table>
@@ -33,18 +39,41 @@
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script>
-        document.getElementById("studentForm").addEventListener("submit", function(e) {
+        var SelectedstudentId="";
+        // Attach a click event handler to each table row
+        document.getElementById("studentsList").addEventListener("click", function (event) {
+            var clickedRow = event.target.closest("tr");
+            if (clickedRow) {
+                var reciver = document.getElementById("selectedid");
+                var nameReciver = document.getElementById("name");
+                var addressReciver = document.getElementById("address");
+                var ageReciver = document.getElementById("age");
+
+               SelectedstudentId = clickedRow.getAttribute("data-student-id");
+                var name = clickedRow.querySelector('td[name="name"]').innerText;
+                var address = clickedRow.querySelector('td[name="address"]').innerText;
+                var age = clickedRow.querySelector('td[name="age"]').innerText;
+
+                // Do something with the student ID
+                reciver.innerHTML = "Selected student ID: " + SelectedstudentId;
+                nameReciver.value  = name;
+                addressReciver.value  = address;
+                ageReciver.value  = age;
+            }
+        });
+
+    document.getElementById("studentForm").addEventListener("submit", function(e) {
         e.preventDefault();
         submit();
     });
+
     document.addEventListener("DOMContentLoaded", function (e) {
     e.preventDefault();
     getALLCol();
-});
-        var reciv = document.getElementById("sendresp");
+    });
+        
     function submit() {
-
-        console.log("jsonObject");
+        var reciv = document.getElementById("sendresp");
         const myRequest = new XMLHttpRequest();
         
         myRequest.onreadystatechange = function () {
@@ -90,6 +119,7 @@
                     var name = "";
                     var age = 0; // Assuming age is a number
                     var address = "";
+                    var id="";
                 // Clear existing rows
                     tableBody.innerHTML = "";
                 //Loop to add Rows to tablebody
@@ -97,17 +127,29 @@
                             name =jsObject[i].name;
                             address=jsObject[i].address;
                             age=jsObject[i].age;
-                        // Append a new row to the table body
+                            id=jsObject[i]._id;
+                    // Append a new row to the table body
+
                         // creat new row to table body 
                             var newRow = tableBody.insertRow(tableBody.rows.length);
+
                         //creat td int new row 
                             var cell1 = newRow.insertCell(0);
                             var cell2 = newRow.insertCell(1);
                             var cell3 = newRow.insertCell(2);
+                            var cell4 = newRow.insertCell(3);
                         //set data to row cells
                             cell1.innerHTML = name;
                             cell2.innerHTML = address;
                             cell3.innerHTML = age;
+                            cell4.innerHTML = id;
+
+                         // Use HTML custom attribute to store student ID
+                            newRow.setAttribute('data-student-id', id);
+                            cell1.setAttribute('name', 'name');
+                            cell2.setAttribute('name', 'address');
+                            cell3.setAttribute('name', 'age');
+
                     }
                     
             };
@@ -115,15 +157,33 @@
         Freq.open("GET", "http://localhost:8080/lisaani/students",true);
         Freq.send();
     };
-    function UpdateAGE(){
+    function UpdateCollection(){
+        var id=SelectedstudentId;
+        console.log(id);
         const Freq=new XMLHttpRequest();
         Freq.onreadystatechange =function(){
             if(Freq.status==200 && Freq.readyState==4){
                 
             };
         };
-        Freq.open("PUT", "/lisaani/students/edit/{id}",true);
-        Freq.send();
+        //Creat Obkject to send 
+        var name = $("#name").val();
+        var address = $("#address").val();
+        var age = parseInt($("#age").val(), 10);
+
+        // Create a JSON object
+        var jsonObject = {
+            name: name,
+            address: address,
+            age: age
+        };
+
+        Freq.open("PUT", "http://localhost:8080/lisaani/students/edit/"+id,true);
+        // Convert the JavaScript object to a JSON string
+        var jsonData = JSON.stringify(jsonObject);
+        console.log(jsonObject);
+        console.log(jsonData);
+        Freq.send(jsonData);
     };
 </script>
 <style>

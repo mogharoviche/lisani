@@ -9,7 +9,7 @@ import (
 type Student struct {
 	ID      string `json:"id,omitempty" bson:"_id,omitempty"`
 	Name    string `json:"Name,omitempty" bson:"name,omitempty"`
-	Age     int    `json:"Age,omitempty" bson:"age,omitempty"`
+	Age     int    `json:"age" bson:"age"`
 	Address string `json:"Address,omitempty" bson:"address,omitempty"`
 }
 

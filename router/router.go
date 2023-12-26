@@ -2,6 +2,7 @@ package router
 
 import (
 	"lisani/controller"
+	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -29,6 +30,9 @@ func enableCORS(next http.Handler) http.Handler {
 			w.WriteHeader(http.StatusOK)
 			return
 		}
+
+		// Log the request if needed
+		log.Printf("[%s] %s %s", r.Method, r.URL.Path, r.RemoteAddr)
 
 		next.ServeHTTP(w, r)
 	})
