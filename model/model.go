@@ -17,3 +17,10 @@ func CreateStudent(student Student, collection *mongo.Collection) error {
 	_, err := collection.InsertOne(context.Background(), student)
 	return err
 }
+
+type User struct {
+	ID       string `json:"id,omitempty" bson:"_id,omitempty"`
+	Username string `json:"Username" bson:"Username"`
+	Password string `json:"Password" bson:"Password"`
+	Email    string `json:"Email,omitempty" bson:"Email,omitempty"`
+}

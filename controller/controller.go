@@ -15,6 +15,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+type Model interface {
+}
+
 // Congig
 const connectionstring = "mongodb://localhost:27017"
 const dbName = "Mydblisane"
@@ -24,7 +27,7 @@ const dbName = "Mydblisane"
 var collection *mongo.Collection
 
 // connect with mongoDB
-func CXDB(colname string) {
+func cxdb(colname string) *mongo.Client {
 	//client options
 	clientoption := options.Client().ApplyURI(connectionstring)
 	//connect to mongo db
@@ -34,13 +37,15 @@ func CXDB(colname string) {
 	}
 	fmt.Println("Mongodb connection success")
 	collection = client.Database(dbName).Collection(colname)
+	return client
 }
 
 // MongoDb -fils
 // Creat Helpers ************************************************
 // insert 1 record :
-func insertonestudent(modelname models.Student, colnam string) {
-	CXDB(colnam)
+func insertoneObj(modelname Model, colnam string) {
+	client := cxdb(colnam)
+	defer client.Disconnect(context.TODO())
 	inserted, err := collection.InsertOne(context.Background(), modelname)
 	if err != nil {
 		log.Fatal(err)
@@ -50,7 +55,8 @@ func insertonestudent(modelname models.Student, colnam string) {
 
 // update one record
 func updateonestudent(studentId string, newstudent models.Student, colnam string) {
-	CXDB(colnam)
+	client := cxdb(colnam)
+	defer client.Disconnect(context.TODO())
 	id, _ := primitive.ObjectIDFromHex(studentId)
 	filter := bson.M{"_id": id}
 	update := bson.M{"$set": newstudent}
@@ -63,7 +69,8 @@ func updateonestudent(studentId string, newstudent models.Student, colnam string
 
 // delet 1 record
 func deleteonestudent(studentId string, colnam string) {
-	CXDB(colnam)
+	client := cxdb(colnam)
+	defer client.Disconnect(context.TODO())
 	id, _ := primitive.ObjectIDFromHex(studentId)
 	filter := bson.M{"_id": id}
 	deletecount, err := collection.DeleteOne(context.Background(), filter)
@@ -75,7 +82,8 @@ func deleteonestudent(studentId string, colnam string) {
 
 // delete all record from db
 func deletall(colnam string) int64 {
-	CXDB(colnam)
+	client := cxdb(colnam)
+	defer client.Disconnect(context.TODO())
 	filter := bson.D{{}}
 	deletecount, err := collection.DeleteMany(context.Background(), filter, nil)
 	if err != nil {
@@ -87,7 +95,8 @@ func deletall(colnam string) int64 {
 
 // get all student
 func getAll(colnam string) []primitive.M {
-	CXDB(colnam)
+	client := cxdb(colnam)
+	defer client.Disconnect(context.TODO())
 	cursor, err := collection.Find(context.Background(), bson.D{{}})
 	if err != nil {
 		log.Fatal(err)
@@ -117,7 +126,7 @@ func Creatstudent(w http.ResponseWriter, r *http.Request) {
 
 	var student models.Student
 	_ = json.NewDecoder(r.Body).Decode(&student)
-	insertonestudent(student, "students")
+	insertoneObj(student, "students")
 	json.NewEncoder(w).Encode(student)
 }
 func Markedaspresent(w http.ResponseWriter, r *http.Request) {
@@ -147,4 +156,21 @@ func DeleteAllStudents(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Allow-Control-Allow-Methods", "DELETE")
 	deletcount := deletall("students")
 	json.NewEncoder(w).Encode(deletcount)
+}
+
+func RegisterHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Allow-Control-Allow-Methods", "POST")
+
+	var newUser models.User
+	_ = json.NewDecoder(r.Body).Decode(&newUser)
+	insertoneObj(newUser, "Users")
+	json.NewEncoder(w).Encode(newUser)
+
+}
+
+func LoginHandler(w http.ResponseWriter, r *http.Request) {
+	// Parse the request body to get user login data
+	// Check the entered credentials against the MongoDB collection
+	// If valid, generate a session token and send it to the client
 }

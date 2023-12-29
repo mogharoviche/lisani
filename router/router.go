@@ -17,7 +17,8 @@ func Router() *mux.Router {
 	router.HandleFunc("/lisaani/students/add", controller.Creatstudent).Methods("POST", "OPTIONS")
 	router.HandleFunc("/lisaani/students/deleteAll", controller.DeleteAllStudents).Methods("DELETE", "OPTIONS")
 	router.HandleFunc("/lisaani/students/delete/{id}", controller.DeleteStudent).Methods("DELETE", "OPTIONS")
-
+	router.HandleFunc("/register", controller.RegisterHandler).Methods("POST")
+	router.HandleFunc("/login", controller.LoginHandler).Methods("GET")
 	return router
 }
 func enableCORS(next http.Handler) http.Handler {
